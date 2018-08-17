@@ -2,7 +2,7 @@
 
 Space invaders clone written using C++ and OpenGL
 
-Code from the C++ [tutorial][http://nicktasios.nl/posts/space-invaders-from-scratch-part-1.html] by Nick Tasios.
+Code from the C++ <a href="http://nicktasios.nl/posts/space-invaders-from-scratch-part-1.html>tutorial</a> by Nick Tasios.
 
 You need to install GLFW:
 Ubuntu: sudo apt-get install glfw3 glew

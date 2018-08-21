@@ -1,10 +1,35 @@
 #include <cstdio>
+#include <cstdint>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-
 void error_callback(int error, const char* description)
 {
 	fprintf(stderr, "Error: %s\n", description);
+}
+
+// Buffer represents pixels on the screen
+struct Buffer
+{
+    size_t width, height;
+    // Using uint32_t allows to store 4 8-bit color values for each pixel
+    uint32_t* data;
+};
+
+// Sets the left most 24 bits to the r,g,b values respectively
+// the right-most 8 bits are set to 255 (but not used)
+uint32_t rgb_to_uint32(uint8_t r, uint8_t g, uint8_t b)
+{
+	return (r << 24) | (g << 16) | (b << 8) | 255;
+}
+
+// Clear the buffer to a certain color
+// Iterate over all pixels and set each pixel to the give color
+void buffer_clear(Buffer* buffer, uint32_t color)
+{ 
+	for(size_t i=0; i< buffer->width * buffer->height; ++i)
+	{
+		buffer->data[i] = color;
+	}
 }
 
 int main(int argc, char* argv[]) {
@@ -53,6 +78,19 @@ int main(int argc, char* argv[]) {
 	// infinite game loop to process input and update and redraw game
 	// set the buffer clear color for glClear to red
 	glClearColor(1.0, 0.0, 0.0, 1.0);
+
+	// Create graphics buffer
+	uint32_t clear_color = rgb_to_uint32(0, 128, 0);
+	Buffer buffer;
+	buffer.width = buffer_width;
+	buffer.height = buffer_height;
+	buffer.data = new uint32_t[buffer.width * buffer.height];
+	buffer_clear(&buffer, clear_color); // clear_color = green
+
+
+
+
+
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);

@@ -1,4 +1,4 @@
-# space_invaders
+# Space Invaders
 
 Space invaders clone written using C++ and OpenGL
 

@@ -3,22 +3,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-
-
-
-void error_callback(int error, const char* description)
-{
-    fprintf(stderr, "Error: %s\n", description);
-}
-
-
-
-// Sets the left most 24 bits to the r,g,b values respectively
-// the right-most 8 bits are set to 255 (but not used)
-uint32_t rgb_to_uint32(uint8_t r, uint8_t g, uint8_t b)
-{
-    return (r << 24) | (g << 16) | (b << 8) | 255;
-}
 // Buffer represents pixels on the screen
 struct Buffer
 {
@@ -35,6 +19,61 @@ struct Sprite
     uint8_t* data;
 };
 
+// Position x,y in pixels from the bottom left corner of window
+struct Alien 
+{
+	size_t x,y;
+	uint8_t type;
+};
+
+// Position x,y in pixels from the bottom left corner of window
+// Number of lvies of the player
+struct Player
+{
+	size_t x,y;
+	size_t life;
+};
+
+// Height and width of the game in pixels,
+struct Game 
+{
+	size_t width, height;
+	size_t num_aliens;
+	Alien* aliens;
+	Player player;
+};
+
+
+void error_callback(int error, const char* description)
+{
+    fprintf(stderr, "Error: %s\n", description);
+}
+
+// Goes over sprite pixels and draws "on" pixels 
+// at specified coordinates if within buffer bounds
+void buffer_draw_sprite(Buffer* buffer, const Sprite& sprite, size_t x, size_t y, uint32_t color)
+{
+	for(size_t xi = 0; xi < sprite.width; ++xi)
+	{
+		for(size_t yi = 0; yi < sprite.height; ++yi)
+		{
+			if(sprite.data[yi * sprite.width + xi] && 
+					(sprite.height - 1 + y - yi) < buffer-> height &&
+					(x + xi) < buffer->width)
+			{
+				buffer->data[(sprite.height - 1 + y - yi) * buffer->width + (x + xi)] = color;
+			}
+		}
+	}
+}
+
+
+// Sets the left most 24 bits to the r,g,b values respectively
+// the right-most 8 bits are set to 255 (but not used)
+uint32_t rgb_to_uint32(uint8_t r, uint8_t g, uint8_t b)
+{
+    return (r << 24) | (g << 16) | (b << 8) | 255;
+}
 // Clear the buffer to a certain color
 // Iterate over all pixels and set each pixel to the give color
 void buffer_clear(Buffer* buffer, uint32_t color)
@@ -60,26 +99,6 @@ void validate_shader(GLuint shader, const char* file = 0)
     }
 }
 
-// Goes over sprite pixels and draws "on" pixels 
-// at specified coordinates if within buffer bounds
-void buffer_sprite_draw(
-	Buffer* buffer, const Sprite& sprite,
-	size_t x, size_t y, uint32_t color
-	){
-    for(size_t xi = 0; xi < sprite.width; ++xi)
-    {
-	for(size_t yi = 0; yi < sprite.height; ++yi)
-	{
-	    size_t sy = sprite.height - 1 + y - yi;
-	    size_t sx = x + xi;
-	    if(sprite.data[yi * sprite.width + xi] &&
-		    sy < buffer->height && sx < buffer->width) 
-	    {
-		buffer->data[sy * buffer->width + sx] = color;
-	    }
-	}
-    }
-}
 
 bool validate_program(GLuint program)
 {
@@ -284,13 +303,54 @@ int main(int argc, char* argv[]) {
 	    0,0,0,1,1,0,1,1,0,0,0  // ...@@.@@...
     };
 
+    Sprite player_sprite;
+    player_sprite.width = 11;
+    player_sprite.height = 7;
+    player_sprite.data = new uint8_t[player_sprite.width * player_sprite.height]
+    {
+    0,0,0,0,0,1,0,0,0,0,0, // .....@.....
+    0,0,0,0,1,1,1,0,0,0,0, // ....@@@....
+    0,0,0,0,1,1,1,0,0,0,0, // ....@@@....
+    0,1,1,1,1,1,1,1,1,1,0, // .@@@@@@@@@.
+    1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
+    1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
+    1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
+	};
+
+
+    Game game;
+    game.width = buffer_width;
+    game.height = buffer_height;
+    game.num_aliens = 55;
+    game.aliens = new Alien[game.num_aliens];
+
+    game.player.x = 112 - 5;
+    game.player.y = 32;
+
+    game.player.life = 3;
+
+    // Initialize all the alien positions to something reasonable
+    for(size_t yi = 0; yi < 5; ++yi) {
+	    for(size_t xi = 0; xi < 11; ++xi) {
+		    game.aliens[yi * 11 + xi].x = 16 * xi + 20;
+		    game.aliens[yi * 11 + xi].y = 17 * yi + 128;
+	    }
+    }
+
     uint32_t clear_color = rgb_to_uint32(0, 128, 0);
 
     while (!glfwWindowShouldClose(window))
     {
 	buffer_clear(&buffer, clear_color); // clear_color = green
-	buffer_sprite_draw(&buffer, alien_sprite,
-		112, 128, rgb_to_uint32(128, 0, 0));
+	// Draw the player and all aliens
+	for(size_t ai = 0; ai < game.num_aliens; ++ai)
+	{
+		const Alien& alien = game.aliens[ai];
+		buffer_draw_sprite(&buffer, alien_sprite, alien.x, alien.y, rgb_to_uint32(128, 0, 0));
+	}
+	buffer_draw_sprite(&buffer, player_sprite, game.player.x, game.player.y, rgb_to_uint32(128, 0, 0));
+
+
 	glTexSubImage2D(
 		GL_TEXTURE_2D, 0, 0, 0,
 		buffer.width, buffer.height,
@@ -298,7 +358,7 @@ int main(int argc, char* argv[]) {
 		buffer.data
 		);
 
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	// front buffer is used for displaying, back buffer is used for drawing
 	// swapping buffers at each iteration
 	glfwSwapBuffers(window);

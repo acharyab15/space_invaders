@@ -6,6 +6,7 @@
 bool game_running = false;
 int move_dir = 0;
 bool fire_pressed = 0;
+size_t score = 0;
 
 // Buffer represents pixels on the screen
 struct Buffer
@@ -121,6 +122,50 @@ void buffer_draw_sprite(Buffer* buffer, const Sprite& sprite, size_t x, size_t y
 	}
 }
 
+// Draw the text as a sprite at specified coordinates and with specified color
+void buffer_draw_text(Buffer *buffer, const Sprite& text_spritesheet, const char* text, 
+				size_t x, size_t y, uint32_t color){
+		size_t xp = x;
+		// stride is size of one character sprite (7x5 = 35)
+		size_t stride = text_spritesheet.width * text_spritesheet.height;
+		Sprite sprite = text_spritesheet;
+		// iterate through all the characters in the text until the null character
+		for(const char* charp = text; *charp != '\0'; ++charp)
+		{
+			char character = *charp - 32;
+			if (character < 0 || character >= 65) continue;
+			sprite.data = text_spritesheet.data + character * stride;
+			buffer_draw_sprite(buffer, sprite, xp, y, color);
+			xp += sprite.width + 1;
+		}
+}
+
+// Draw numbers
+void buffer_draw_number(Buffer* buffer, const Sprite& number_spritesheet, size_t number,
+				size_t x, size_t y, uint32_t color)
+{
+		uint8_t digits[64];
+		size_t num_digits = 0;
+
+		size_t current_number = number;
+		do
+		{
+				digits[num_digits++] = current_number % 10;
+				current_number = current_number / 10;
+		}
+		while(current_number > 0);
+		size_t xp = x;
+		size_t stride = number_spritesheet.width * number_spritesheet.height;
+		Sprite sprite = number_spritesheet;
+		for(size_t i = 0; i < num_digits; ++i)
+		{
+				uint8_t digit = digits[num_digits - i - 1];
+				sprite.data = number_spritesheet.data + digit * stride;
+				buffer_draw_sprite(buffer, sprite, xp, y, color);
+				xp += sprite.width + 1;
+		}
+
+}
 
 // Sets the left most 24 bits to the r,g,b values respectively
 // the right-most 8 bits are set to 255 (but not used)
@@ -533,6 +578,8 @@ int main(int argc, char* argv[]) {
 	game_running = true;
 	uint32_t clear_color = rgb_to_uint32(0, 128, 0);
 
+    glDeleteVertexArrays(1, &fullscreen_triangle_vao);
+
 	while (!glfwWindowShouldClose(window) && game_running)
 	{
 		buffer_clear(&buffer, clear_color); // clear_color = green
@@ -566,10 +613,6 @@ int main(int argc, char* argv[]) {
 		}
 
 		buffer_draw_sprite(&buffer, player_sprite, game.player.x, game.player.y, rgb_to_uint32(128, 0, 0));
-
-		
-
-
 
 		// Update animations
 		for(size_t i = 0; i < 3; ++i)
@@ -631,6 +674,8 @@ int main(int argc, char* argv[]) {
 						);
 				if(overlap)
 				{
+					// Based on the alien type, add score between 10 - 40 points
+					score += 10 * (4 - game.aliens[ai].type);
 					game.aliens[ai].type = ALIEN_DEAD;
 					// NOTE: Hack to recenter death sprite
 					game.aliens[ai].x -= (alien_death_sprite.width - alien_sprite.width)/2;
@@ -672,8 +717,6 @@ int main(int argc, char* argv[]) {
 
 		// processing any pending events
 		glfwPollEvents();
-
-
 	}
 	glfwDestroyWindow(window);
 	glfwTerminate();

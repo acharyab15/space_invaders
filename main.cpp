@@ -53,7 +53,9 @@ struct Bullet
 	size_t x, y;
 	int dir;
 };
+
 #define GAME_MAX_BULLETS 128
+
 // Height and width of the game in pixels,
 struct Game 
 {
@@ -247,7 +249,7 @@ int main(int argc, char* argv[]) {
 
 	// first NULL -- specifying a monitor for full-screen mode
 	// second NULL -- sharing context between different windows
-	window=glfwCreateWindow(640, 480, "Space Invaders", NULL, NULL);
+	window=glfwCreateWindow(2*buffer_width, 2*buffer_height, "Space Invaders", NULL, NULL);
 	if(!window)
 	{
 		// destroy resources if any problems
@@ -276,6 +278,8 @@ int main(int argc, char* argv[]) {
 	glGetIntegerv(GL_MINOR_VERSION, &glVersion[1]);
 
 	printf("Using OpenGL: %d.%d\n", glVersion[0], glVersion[1]);
+    printf("Renderer used: %s\n", glGetString(GL_RENDERER));
+    printf("Shading Language: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 	// Turn V-Sync on to syncrhonize video card updates
 	// with monitor refresh rate. For 60Hz refresh rate, framerate of game is 60
@@ -290,6 +294,7 @@ int main(int argc, char* argv[]) {
 	buffer.width = buffer_width;
 	buffer.height = buffer_height;
 	buffer.data = new uint32_t[buffer.width * buffer.height];
+
 	buffer_clear(&buffer, 0); 
 
 	// Texture holds image data 
@@ -403,8 +408,6 @@ int main(int argc, char* argv[]) {
 	glDisable(GL_DEPTH_TEST);
 	glActiveTexture(GL_TEXTURE0);
 
-
-	glDisable(GL_DEPTH_TEST);
 	glBindVertexArray(fullscreen_triangle_vao);
 
 	// Prepare game
@@ -415,13 +418,13 @@ int main(int argc, char* argv[]) {
 	alien_sprites[0].data = new uint8_t[64]
 	{
 		0,0,0,1,1,0,0,0, // ...@@...
-			0,0,1,1,1,1,0,0, // ..@@@@..
-			0,1,1,1,1,1,1,0, // .@@@@@@.
-			1,1,0,1,1,0,1,1, // @@.@@.@@
-			1,1,1,1,1,1,1,1, // @@@@@@@@
-			0,1,0,1,1,0,1,0, // .@.@@.@.
-			1,0,0,0,0,0,0,1, // @......@
-			0,1,0,0,0,0,1,0  // .@....@.
+		0,0,1,1,1,1,0,0, // ..@@@@..
+		0,1,1,1,1,1,1,0, // .@@@@@@.
+		1,1,0,1,1,0,1,1, // @@.@@.@@
+		1,1,1,1,1,1,1,1, // @@@@@@@@
+		0,1,0,1,1,0,1,0, // .@.@@.@.
+		1,0,0,0,0,0,0,1, // @......@
+		0,1,0,0,0,0,1,0  // .@....@.
 	};
 
 	alien_sprites[1].width = 8;
@@ -429,26 +432,26 @@ int main(int argc, char* argv[]) {
 	alien_sprites[1].data = new uint8_t[64]
 	{
 		0,0,0,1,1,0,0,0, // ...@@...
-			0,0,1,1,1,1,0,0, // ..@@@@..
-			0,1,1,1,1,1,1,0, // .@@@@@@.
-			1,1,0,1,1,0,1,1, // @@.@@.@@
-			1,1,1,1,1,1,1,1, // @@@@@@@@
-			0,0,1,0,0,1,0,0, // ..@..@..
-			0,1,0,1,1,0,1,0, // .@.@@.@.
-			1,0,1,0,0,1,0,1  // @.@..@.@
+		0,0,1,1,1,1,0,0, // ..@@@@..
+		0,1,1,1,1,1,1,0, // .@@@@@@.
+		1,1,0,1,1,0,1,1, // @@.@@.@@
+		1,1,1,1,1,1,1,1, // @@@@@@@@
+		0,0,1,0,0,1,0,0, // ..@..@..
+		0,1,0,1,1,0,1,0, // .@.@@.@.
+		1,0,1,0,0,1,0,1  // @.@..@.@
 	};
 	alien_sprites[2].width = 11;
 	alien_sprites[2].height = 8;
 	alien_sprites[2].data = new uint8_t[88]
 	{
 		0,0,1,0,0,0,0,0,1,0,0, // ..@.....@..
-			0,0,0,1,0,0,0,1,0,0,0, // ...@...@...
-			0,0,1,1,1,1,1,1,1,0,0, // ..@@@@@@@..
-			0,1,1,0,1,1,1,0,1,1,0, // .@@.@@@.@@.
-			1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
-			1,0,1,1,1,1,1,1,1,0,1, // @.@@@@@@@.@
-			1,0,1,0,0,0,0,0,1,0,1, // @.@.....@.@
-			0,0,0,1,1,0,1,1,0,0,0  // ...@@.@@...
+		0,0,0,1,0,0,0,1,0,0,0, // ...@...@...
+		0,0,1,1,1,1,1,1,1,0,0, // ..@@@@@@@..
+		0,1,1,0,1,1,1,0,1,1,0, // .@@.@@@.@@.
+		1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
+		1,0,1,1,1,1,1,1,1,0,1, // @.@@@@@@@.@
+		1,0,1,0,0,0,0,0,1,0,1, // @.@.....@.@
+		0,0,0,1,1,0,1,1,0,0,0  // ...@@.@@...
 	};
 
 	alien_sprites[3].width = 11;
@@ -456,26 +459,26 @@ int main(int argc, char* argv[]) {
 	alien_sprites[3].data = new uint8_t[88]
 	{
 		0,0,1,0,0,0,0,0,1,0,0, // ..@.....@..
-			1,0,0,1,0,0,0,1,0,0,1, // @..@...@..@
-			1,0,1,1,1,1,1,1,1,0,1, // @.@@@@@@@.@
-			1,1,1,0,1,1,1,0,1,1,1, // @@@.@@@.@@@
-			1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
-			0,1,1,1,1,1,1,1,1,1,0, // .@@@@@@@@@.
-			0,0,1,0,0,0,0,0,1,0,0, // ..@.....@..
-			0,1,0,0,0,0,0,0,0,1,0  // .@.......@.
+		1,0,0,1,0,0,0,1,0,0,1, // @..@...@..@
+		1,0,1,1,1,1,1,1,1,0,1, // @.@@@@@@@.@
+		1,1,1,0,1,1,1,0,1,1,1, // @@@.@@@.@@@
+		1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
+		0,1,1,1,1,1,1,1,1,1,0, // .@@@@@@@@@.
+		0,0,1,0,0,0,0,0,1,0,0, // ..@.....@..
+		0,1,0,0,0,0,0,0,0,1,0  // .@.......@.
 	};
 	alien_sprites[4].width = 12;
 	alien_sprites[4].height = 8;
 	alien_sprites[4].data = new uint8_t[96]
 	{
 		0,0,0,0,1,1,1,1,0,0,0,0, // ....@@@@....
-			0,1,1,1,1,1,1,1,1,1,1,0, // .@@@@@@@@@@.
-			1,1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@@
-			1,1,1,0,0,1,1,0,0,1,1,1, // @@@..@@..@@@
-			1,1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@@
-			0,0,0,1,1,0,0,1,1,0,0,0, // ...@@..@@...
-			0,0,1,1,0,1,1,0,1,1,0,0, // ..@@.@@.@@..
-			1,1,0,0,0,0,0,0,0,0,1,1  // @@........@@
+		0,1,1,1,1,1,1,1,1,1,1,0, // .@@@@@@@@@@.
+		1,1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@@
+		1,1,1,0,0,1,1,0,0,1,1,1, // @@@..@@..@@@
+		1,1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@@
+		0,0,0,1,1,0,0,1,1,0,0,0, // ...@@..@@...
+		0,0,1,1,0,1,1,0,1,1,0,0, // ..@@.@@.@@..
+		1,1,0,0,0,0,0,0,0,0,1,1  // @@........@@
 	};
 
 	alien_sprites[5].width = 12;
@@ -483,26 +486,26 @@ int main(int argc, char* argv[]) {
 	alien_sprites[5].data = new uint8_t[96]
 	{
 		0,0,0,0,1,1,1,1,0,0,0,0, // ....@@@@....
-			0,1,1,1,1,1,1,1,1,1,1,0, // .@@@@@@@@@@.
-			1,1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@@
-			1,1,1,0,0,1,1,0,0,1,1,1, // @@@..@@..@@@
-			1,1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@@
-			0,0,1,1,1,0,0,1,1,1,0,0, // ..@@@..@@@..
-			0,1,1,0,0,1,1,0,0,1,1,0, // .@@..@@..@@.
-			0,0,1,1,0,0,0,0,1,1,0,0  // ..@@....@@..
+		0,1,1,1,1,1,1,1,1,1,1,0, // .@@@@@@@@@@.
+		1,1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@@
+		1,1,1,0,0,1,1,0,0,1,1,1, // @@@..@@..@@@
+		1,1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@@
+		0,0,1,1,1,0,0,1,1,1,0,0, // ..@@@..@@@..
+		0,1,1,0,0,1,1,0,0,1,1,0, // .@@..@@..@@.
+		0,0,1,1,0,0,0,0,1,1,0,0  // ..@@....@@..
 	};
 	Sprite alien_death_sprite;
 	alien_death_sprite.width = 13;
 	alien_death_sprite.height = 7;
-	alien_death_sprite.data = new uint8_t[91]
+	alien_death_sprite.data = new uint8_t[alien_death_sprite.width * alien_death_sprite.height]
 	{
 		0,1,0,0,1,0,0,0,1,0,0,1,0, // .@..@...@..@.
-			0,0,1,0,0,1,0,1,0,0,1,0,0, // ..@..@.@..@..
-			0,0,0,1,0,0,0,0,0,1,0,0,0, // ...@.....@...
-			1,1,0,0,0,0,0,0,0,0,0,1,1, // @@.........@@
-			0,0,0,1,0,0,0,0,0,1,0,0,0, // ...@.....@...
-			0,0,1,0,0,1,0,1,0,0,1,0,0, // ..@..@.@..@..
-			0,1,0,0,1,0,0,0,1,0,0,1,0  // .@..@...@..@.
+		0,0,1,0,0,1,0,1,0,0,1,0,0, // ..@..@.@..@..
+		0,0,0,1,0,0,0,0,0,1,0,0,0, // ...@.....@...
+		1,1,0,0,0,0,0,0,0,0,0,1,1, // @@.........@@
+		0,0,0,1,0,0,0,0,0,1,0,0,0, // ...@.....@...
+		0,0,1,0,0,1,0,1,0,0,1,0,0, // ..@..@.@..@..
+		0,1,0,0,1,0,0,0,1,0,0,1,0  // .@..@...@..@.
 	};
 	Sprite player_sprite;
 	player_sprite.width = 11;
@@ -510,12 +513,12 @@ int main(int argc, char* argv[]) {
 	player_sprite.data = new uint8_t[player_sprite.width * player_sprite.height]
 	{
 		0,0,0,0,0,1,0,0,0,0,0, // .....@.....
-			0,0,0,0,1,1,1,0,0,0,0, // ....@@@....
-			0,0,0,0,1,1,1,0,0,0,0, // ....@@@....
-			0,1,1,1,1,1,1,1,1,1,0, // .@@@@@@@@@.
-			1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
-			1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
-			1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
+		0,0,0,0,1,1,1,0,0,0,0, // ....@@@....
+		0,0,0,0,1,1,1,0,0,0,0, // ....@@@....
+		0,1,1,1,1,1,1,1,1,1,0, // .@@@@@@@@@.
+		1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
+		1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
+		1,1,1,1,1,1,1,1,1,1,1, // @@@@@@@@@@@
 	};
 
 	Sprite text_spritesheet;
@@ -628,6 +631,7 @@ int main(int argc, char* argv[]) {
 	game.width = buffer_width;
 	game.height = buffer_height;
 	game.num_aliens = 55;
+    game.num_bullets = 0;
 	game.aliens = new Alien[game.num_aliens];
 
 	game.player.x = 112 - 5;
@@ -661,8 +665,7 @@ int main(int argc, char* argv[]) {
 	size_t score = 0;
 	size_t credits = 0;
 	uint32_t clear_color = rgb_to_uint32(0, 128, 0);
-
-    glDeleteVertexArrays(1, &fullscreen_triangle_vao);
+    int player_move_dir = 0;
 
 	while (!glfwWindowShouldClose(window) && game_running)
 	{
@@ -799,7 +802,7 @@ int main(int argc, char* argv[]) {
 
 		// Simulate player
 		// variable that controls player direction of movement
-		int player_move_dir = 2*move_dir;
+		int player_move_dir = move_dir;
 
 		if(player_move_dir != 0){
 			// Basic collision detection of player sprite with the wall
@@ -814,7 +817,8 @@ int main(int argc, char* argv[]) {
 			}
 			else game.player.x += player_move_dir;
 		}
-
+		
+		// Process events
 		if(fire_pressed && game.num_bullets < GAME_MAX_BULLETS)
 		{
 			game.bullets[game.num_bullets].x = game.player.x + player_sprite.width / 2;
